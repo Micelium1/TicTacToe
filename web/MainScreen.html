@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крестики-Нолики</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        button, select {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Крестики-Нолики</h1>
+        <div id="start-screen">
+            <button id="start-btn">Начать играть</button>
+        </div>
+
+        <div id="settings-screen" class="hidden">
+            <h2>Выберите параметры игры:</h2>
+            <label for="difficulty">Сложность:</label>
+            <select id="difficulty">
+                <option value="easy">Легкий</option>
+                <option value="medium" disabled>Средний (недоступно)</option>
+                <option value="hard" disabled>Сложный (недоступно)</option>
+            </select>
+            <br>
+            <label for="side">Выберите сторону:</label>
+            <select id="side">
+                <option value="X">Крестик</option>
+                <option value="O">Нолик</option>
+            </select>
+            <br>
+            <button id="play-btn">Играть</button>
+        </div>
+    </div>
+
+    <script>
+        // Переключение между экранами
+        const startScreen = document.getElementById('start-screen');
+        const settingsScreen = document.getElementById('settings-screen');
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            settingsScreen.classList.remove('hidden');
+        });
+
+        // Отправка данных на бэк
+        document.getElementById('play-btn').addEventListener('click', () => {
+            const difficulty = document.getElementById('difficulty').value;
+            const side = document.getElementById('side').value;
+
+            const payload = {
+                difficulty: difficulty,
+                side: side
+            };
+
+            fetch('/start-game', { // URL эндпоинта бэка
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка при начале игры');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(`Игра началась! Ваш ID сессии: ${data.sessionId}`);
+                // Перенаправление на игровое поле
+                window.location.href = `/game?sessionId=${data.sessionId}`;
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Не удалось начать игру. Попробуйте еще раз.');
+            });
+        });
+    </script>
+</body>
+</html>

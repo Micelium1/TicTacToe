@@ -21,14 +21,14 @@ const (
 )
 
 type Field [][]FieldContainment
-
+type FieldRow []FieldContainment
 type AI struct {
 	Difficulty_ Difficulty
 	Side_       FieldContainment
 	MakeMove    func(GameState Field)
 }
 
-func CreateAI(Dif Difficulty, Side FieldContainment) AI {
+func CreateAI(Dif Difficulty, Side FieldContainment) *AI {
 	var Ai AI
 	Ai.Difficulty_ = Dif
 	Ai.Side_ = Side
@@ -49,5 +49,5 @@ func CreateAI(Dif Difficulty, Side FieldContainment) AI {
 		}
 
 	}
-	return Ai
+	return &Ai
 }

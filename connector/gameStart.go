@@ -2,8 +2,8 @@ package connector
 
 import (
 	"TicTacToe/AI"
+	session "TicTacToe/Session"
 	"TicTacToe/model"
-	"TicTacToe/session"
 	"encoding/json"
 	"fmt"
 	"net/http"

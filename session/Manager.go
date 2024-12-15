@@ -1,4 +1,4 @@
-package session
+package Session
 
 import (
 	"math/rand"

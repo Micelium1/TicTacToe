@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        #game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        .cell.taken {
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+        #back-button {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <button id="back-button" onclick="goToHome()">Вернуться на главную</button>
+    <div>
+        <div id="game-container"></div>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const goToHome = () => {
+            window.location.href = '/';
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('sessionId');
+        const gameContainer = document.getElementById('game-container');
+        const statusDiv = document.getElementById('status');
+
+        const initGame = async () => {
+            try {
+                const response = await fetch(`/game/state?sessionId=${sessionId}`);
+                if (!response.ok) throw new Error('Не удалось получить состояние игры.');
+                const { board, status } = await response.json();
+
+                renderBoard(board);
+                statusDiv.textContent = status || 'Ваш ход!';
+            } catch (error) {
+                statusDiv.textContent = error.message;
+            }
+        };
+
+        const cellMapping = {
+            0: "",
+            1: "X",
+            2: "O"
+        };
+
+        let isGameOver = false;
+
+const renderBoard = (board) => {
+    gameContainer.innerHTML = '';
+    board.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            const cellDiv = document.createElement('div');
+            cellDiv.classList.add('cell');
+            cellDiv.textContent = cellMapping[cell];
+
+            if (cell !== 0 || isGameOver) {
+                cellDiv.classList.add('taken');
+            } else {
+                cellDiv.addEventListener('click', () => makeMove(rowIndex, colIndex));
+            }
+            gameContainer.appendChild(cellDiv);
+        });
+    });
+};
+
+const makeMove = async (row, col) => {
+    if (isGameOver) return;
+
+    try {
+        const response = await fetch(`/game/play`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: sessionId, row, col }),
+        });
+        if (!response.ok) throw new Error('Ошибка при выполнении хода.');
+
+        const { board, status, endGame } = await response.json();
+
+        renderBoard(board);
+        statusDiv.textContent = status;
+
+        if (endGame) {
+            isGameOver = true;
+            Array.from(document.getElementsByClassName('cell')).forEach(cell => {
+                cell.classList.add('taken');
+            });
+        }
+    } catch (error) {
+        statusDiv.textContent = error.message;
+    }
+};
+
+        initGame();
+    </script>
+</body>
+</html>
